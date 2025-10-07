@@ -1,4 +1,4 @@
-# MiSnap SDK v5.8.2 for Android
+# MiSnap SDK v5.9.0 for Android
 Mitek MiSnap™ is a patented mobile-capture SDK that enables an intuitive user experience and instant capture of quality images. It all starts with the quality of the image.
 
 # Table of Contents
@@ -67,12 +67,12 @@ All sizes are download sizes for the `arm64-v8a` architecture.
 <!-- SIZE_TABLE_START -->
 | Use Case                         | Download Size (MiB) | 
 | :------------------------------- | ------------------: |
-| Document                         | 6.43                | 
-| Document and Barcode             | 7.68                | 
-| Document and Biometric           | 14.43               | 
-| Document, Barcode, and Biometric | 15.68               | 
-| Document, Biometric, and NFC     | 20.04               | 
-| Document Classification          | 14.51               | 
+| Document                         | 6.53                | 
+| Document and Barcode             | 9.68                | 
+| Document and Biometric           | 14.53               | 
+| Document, Barcode, and Biometric | 17.68               | 
+| Document, Biometric, and NFC     | 20.14               | 
+| Document Classification          | 14.61               | 
 <!-- SIZE_TABLE_END -->
 
 Please see [this page](documentation/download_sizes.md) for the in-depth size tables.
@@ -260,10 +260,25 @@ The `video recording` feature requires no frame processing therefore optional da
 ### What device info is collected when using `DeviceInfoUtil`?
 It's publicly available non-PII device properties exposed by the Android APIs along with a unique Mitek-specific ID. Note, an ID is unique for every application that has this SDK integrated and its sole purpose is tying a device along with biometrics (face and/or voice) in Mitek server products, i.e. it's impossible to use it to track any user activity for purposes of creating a user profile for advertisement and/or malicious activities.
 
-### Does MiSnap support third-party obfuscators?
-Yes. MiSnap supports code obfuscation using the standard `Android R8/ProGuard` toolchain and includes all necessary ProGuard rules to keep required classes, methods, and resources.
+### Does MiSnap support code obfuscation?
+Yes. MiSnap supports code obfuscation using the standard `Android R8/ProGuard` toolchain and includes
+all necessary ProGuard rules to keep required classes, methods, and resources.
 
-If you're using a third-party obfuscator, you may need to take a few extra steps to ensure compatibility. Here are some general guidelines:
+The MiSnap SDK is modular, you can include only the modules for the features you need. Some modules
+reference optional dependencies (`compileOnly`), which may cause build-time warnings or errors during
+the minification process depending on your AGP version such as:
+```
+Missing class com.miteksystems.misnap.XYZ
+```
+
+To avoid these warnings or errors, you can add the following line to your `proguard-rules.pro` file to 
+avoid warnings for the MiSnap SDK features you are not using:
+```
+-dontwarn com.miteksystems.misnap.**
+```
+
+If you're using a third-party obfuscator, you may need to take a few extra steps to ensure compatibility.
+Here are some general guidelines:
 
 * **Start from ProGuard rules**: Most third-party tools allow you to import or translate existing ProGuard configurations. Use MiSnap’s included rules as a starting point.
 * **Build a minified release**: Run `./gradlew assembleRelease` with minification enabled to verify that the app builds and functions correctly after obfuscation.

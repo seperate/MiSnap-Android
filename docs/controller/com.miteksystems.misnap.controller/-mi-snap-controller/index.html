@@ -16,7 +16,7 @@
         }
     }
     </script>
-<script src="https://unpkg.com/kotlin-playground@1"></script><script src="https://unpkg.com/kotlin-playground@1"></script><script src="https://unpkg.com/kotlin-playground@1"></script><script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async></script>
+<script src="https://unpkg.com/kotlin-playground@1"></script><script src="https://unpkg.com/kotlin-playground@1"></script><script src="https://unpkg.com/kotlin-playground@1"></script><script src="https://unpkg.com/kotlin-playground@1"></script><script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async></script>
 <link href="../../../styles/style.css" rel="Stylesheet">
 <link href="../../../styles/jetbrains-mono.css" rel="Stylesheet">
 <link href="../../../styles/main.css" rel="Stylesheet">
@@ -33,7 +33,7 @@
     <div id="leftToggler"><span class="icon-toggler"></span></div>
     <div class="library-name">
 <a href="../../../index.html">
-<span>MiSnap 5.x Release Pipeline</span>            </a>    </div>
+<span>MiSnap SDK for Android</span>            </a>    </div>
     <div>
     </div>
     <div class="pull-right d-flex">
@@ -66,33 +66,24 @@ import com.miteksystems.misnap.core.MiSnapSettings
 fun main() { 
    //sampleStart 
    /**
- * This example demonstrates a direct integration with MiSnap SDK's document analysis science through
+ * This example demonstrates a direct integration with MiSnap SDK's document analysis science and checks use case through
  * the [MiSnapController], this type of integration is best suited for developers that want to
- * interface with the science directly and that will take care of supplying the frames themselves.
+ *  interface with the science directly and that will take care of supplying the frames themselves.
  *
- * NOTE: Ensure that the provided license has all the necessary features enabled for the target
- *  MiSnap session.
+ * Notes:
+ * - Ensure the provided license enables the required features for your sessions.
+ * - Real-Time Security is NOT compatible with controller-based science integrations.
  *
- * @see com.miteksystems.misnap.examples.science for examples on how to directly interface with other
- * MiSnap SDK sciences.
+ * See also:
+ * - Frame building example: com.miteksystems.misnap.examples.science.FrameFromNativeCamera
  */
-private class DocumentAnalysis : Fragment() {
-
-    /**
-     * Fetch the Misnap SDK license.
-     * Good practice: Handle the license in a way that it is remotely updatable.
-     */
-    private val license by lazy {  
-        LicenseFetcher.fetch()
-    }
-
+class CheckAnalysis : Fragment() {
+    private val license by lazy { LicenseFetcher.fetch() }
     private lateinit var misnapController: MiSnapController
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        misnapController = initDocumentAnalysis()
-
+        misnapController = initCheckAnalysis()
         /**
          * Call [startAnalysis] once the controller is ready to analyze [Frame]s.
          */
@@ -103,7 +94,7 @@ private class DocumentAnalysis : Fragment() {
     }
 
     /**
-     * Create a [MiSnapController] capable of analyzing frames for a Document session, then observe
+     * Create a [MiSnapController] capable of analyzing frames for a Document session for check use case, then observe
      * the different [LiveData] objects to get notified about feedback results, final results, errors,
      * etc.
      * Once the controller is ready and initialized create a [Frame] object and use the [MiSnapController.analyzeFrame]
@@ -112,22 +103,14 @@ private class DocumentAnalysis : Fragment() {
      * @see com.miteksystems.misnap.examples.science.FrameFromNativeCamera for examples on how to
      * build a [Frame] object from different camera APIs.
      */
-    private fun initDocumentAnalysis(): MiSnapController {
-
-        val misnapSettings = MiSnapSettings(MiSnapSettings.UseCase.CHECK_FRONT, license).apply {
+    private fun initCheckAnalysis(): MiSnapController {
+        //Set MiSnap settings for checks (E.g., CHECK_FRONT).
+        val settings = MiSnapSettings(MiSnapSettings.UseCase.CHECK_FRONT, license).apply {
             analysis.document.check.geo = MiSnapSettings.Analysis.Document.Check.Geo.US
-
             analysis.document.trigger = MiSnapSettings.Analysis.Document.Trigger.AUTO
-
-            // Optionally enable on device document classification
-            analysis.document.enableDocumentClassification = true
-
-            // Optionally enable barcode extraction.
-            analysis.document.barcodeExtractionRequirement =
-                MiSnapSettings.Analysis.Document.ExtractionRequirement.OPTIONAL
         }
 
-        return MiSnapController.create(requireContext(), misnapSettings).apply {
+        return MiSnapController.create(requireContext(), settings).apply {
             /**
              * Observe the [MiSnapController.feedbackResult] [LiveData] to handle the feedback from
              * the analyzed frames and handle them accordingly, e.g. by showing the corresponding
@@ -135,7 +118,7 @@ private class DocumentAnalysis : Fragment() {
              * showing the detected document corners using [MiSnapController.FeedbackResult.corners]
              * or the detected glare corners in [MiSnapController.FeedbackResult.glareCorners].
              */
-            feedbackResult.observe(viewLifecycleOwner) { feedbackResult -&gt;
+            feedbackResult.observe(viewLifecycleOwner) { feedback -&gt;
 
             }
 
@@ -159,17 +142,122 @@ private class DocumentAnalysis : Fragment() {
              *
              * @see [ErrorResult] for all the possible error types emitted.
              */
-            errorResult.observe(viewLifecycleOwner) { result -&gt;
+            errorResult.observe(viewLifecycleOwner) { err -&gt;
+                when (err) {
+                    is ErrorResult.DocumentAnalysis -&gt; {  }
+                    else -&gt; {  }
+                }
+            }
+        }
+    }
+} 
+   //sampleEnd
+}</code></pre></div><div class="sample-container"><pre><code class="runnablesample monospace block lang-kotlin" theme="idea">import android.os.Bundle
+import android.view.View
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.LiveData
+import com.miteksystems.misnap.apputil.LicenseFetcher
+import com.miteksystems.misnap.controller.MiSnapController
+import com.miteksystems.misnap.controller.MiSnapController.ErrorResult
+import com.miteksystems.misnap.controller.MiSnapController.FrameResult
+import com.miteksystems.misnap.core.Frame
+import com.miteksystems.misnap.core.MiSnapSettings
+fun main() { 
+   //sampleStart 
+   /**
+ * This example demonstrates a direct integration with MiSnap SDK's document analysis science and identity use case through
+ * the [MiSnapController], this type of integration is best suited for developers that want to
+ * interface with the science directly and that will take care of supplying the frames themselves.
+ *
+ * Example: document analysis for IDs / Passports (science-level) using MiSnapController.
+ *
+ * Notes:
+ * - Ensure the provided license enables the required features for your sessions.
+ * - Real-Time Security is NOT compatible with controller-based science integrations.
+ *
+ * See also:
+ * @see com.miteksystems.misnap.examples.science.FrameFromNativeCamera for examples on how to
+ * build a [Frame] object from camera APIs.
+ * @see com.miteksystems.misnap.examples.science for examples on how to directly interface with other
+ * MiSnap SDK sciences.
+ */
+class IdentityDocumentAnalysis : Fragment() {
+    private val license by lazy { LicenseFetcher.fetch() }
+    private lateinit var misnapController: MiSnapController
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        misnapController = initDocumentAnalysisForId()
+        /**
+         * Call [startAnalysis] once the controller is ready to analyze [Frame]s.
+         */
+    }
+
+    private fun startAnalysis(frame: Frame) {
+        misnapController.analyzeFrame(frame, forceFrameResult = false)
+    }
+
+    /**
+     * Create a [MiSnapController] capable of analyzing frames for a Document session for Id use case, then observe
+     * the different [LiveData] objects to get notified about feedback results, final results, errors,
+     * etc.
+     * Once the controller is ready and initialized create a [Frame] object and use the [MiSnapController.analyzeFrame]
+     * method to analyze the frame.
+     *
+     * @see com.miteksystems.misnap.examples.science.FrameFromNativeCamera for examples on how to
+     * build a [Frame] object from different camera APIs.
+     */
+    private fun initDocumentAnalysisForId(): MiSnapController {
+        //Set MiSnap settings for IDs (e.g., ID_FRONT / ID_BACK / PASSPORT).
+        val misnapSettings = MiSnapSettings(MiSnapSettings.UseCase.ID_FRONT, license).apply {
+            analysis.document.trigger = MiSnapSettings.Analysis.Document.Trigger.AUTO
+
+            // Optional: enable on-device document classification when you need doc type inference.
+            // analysis.document.enableDocumentClassification = true
+
+            // Optional: If you integrate MRZ detection via feature-detector,
+            // configure your MRZ processing pipeline accordingly
+        }
+
+        return MiSnapController.create(requireContext(), misnapSettings).apply {
+            /**
+            * Observe the [MiSnapController.feedbackResult] [LiveData] to handle the feedback from
+            * the analyzed frames and handle them accordingly, e.g. by showing the corresponding
+            * instructions on screen based on the [MiSnapController.FeedbackResult.userAction],
+            * showing the detected document corners using [MiSnapController.FeedbackResult.corners]
+            * or the detected glare corners in [MiSnapController.FeedbackResult.glareCorners].
+            */
+            feedbackResult.observe(viewLifecycleOwner) { feedback -&gt;
+
+            }
+
+            /**
+             * Observe the [MiSnapController.frameResult] [LiveData] to handle the successful results
+             * of a session, e.g. by collecting the frame data in [FrameResult.DocumentAnalysis.frame]
+             * to send it to the server.
+             */
+            frameResult.observe(viewLifecycleOwner) { result -&gt;
                 when (result) {
-                    is ErrorResult.DocumentDetection -&gt; {
+                    is FrameResult.DocumentAnalysis -&gt; {
+
                     }
+                    else -&gt; {}
+                }
+            }
+
+            /**
+             * Observe the [MiSnapController.errorResult] [LiveData] to handle errors during the
+             * analysis of frames.
+             *
+             * @see [ErrorResult] for all the possible error types emitted.
+             */
+            errorResult.observe(viewLifecycleOwner) { err -&gt;
+                when (err) {
                     is ErrorResult.DocumentAnalysis -&gt; {
+
                     }
-                    is ErrorResult.BarcodeDetection -&gt; {
-                    }
-                    is ErrorResult.BarcodeAnalysis -&gt; {
-                    }
-                    is ErrorResult.DocumentClassification -&gt; {
+                    is ErrorResult.DocumentClassification -&gt; { /* if classifier enabled */ }
+                    is ErrorResult.DocumentDetection -&gt; {
 
                     }
                     else -&gt; {}

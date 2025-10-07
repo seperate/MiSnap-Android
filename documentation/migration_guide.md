@@ -1,4 +1,23 @@
-# MiSnap SDK v5.8.2 Migration Guide
+# MiSnap SDK v5.9.0 Migration Guide
+
+## Upgrading the MiSnap SDK from v5.8.2 to v5.9.0
+
+### Customisation Changes
+
+The `misnapWorkflowNfcReaderFragmentHelpPopupMessage` string resource has been deprecated, if you currently override that string, make sure to override the new strings so that your custom content displays as expected:
+- `misnapWorkflowNfcReaderFragmentHelpBulletOnePopupMessage`
+- `misnapWorkflowNfcReaderFragmentHelpBulletTwoPopupMessage`
+- `misnapWorkflowNfcReaderFragmentHelpBulletThreePopupMessage`
+
+This change enhances accessibility by allowing each message to be treated as a distinct element by screen readers.
+
+The `misnapWorkflowReviewFragmentPreviewContentDescription` string resource has been deprecated, if you currently override that string, make sure to override the new strings so that your custom content behaves as expected:
+- `misnapWorkflowReviewFragmentPreviewDocumentContentDescription`
+- `misnapWorkflowReviewFragmentPreviewSelfieContentDescription`
+- `misnapWorkflowReviewFragmentPreviewCheckContentDescription`
+- `misnapWorkflowReviewFragmentPreviewBarcodeContentDescription`
+
+This change provides more specific content descriptions for different types of preview images, enhancing accessibility and clarity for users relying on screen readers.
 
 ## Upgrading the MiSnap SDK from v5.8.1 to v5.8.2
 Starting with MiSnap SDK v5.8.2, the `nfc`, `combined-nfc` or `nfc-reader` modules depend on JMRTD v0.7.42, which addresses security vulnerabilities by updating to Bouncy Castle 1.78.
@@ -7,7 +26,7 @@ This upgrade introduces two new transitive dependencies:
 * `org.bouncycastle:bcprov-jdk18on`
 * `org.bouncycastle:bcutil-jdk18on`
 
-Both of these include OSGI metadata files (OSGI-INF/MANIFEST.MF) that are intended for modular Java environments. 
+Both of these include OSGI metadata files (OSGI-INF/MANIFEST.MF) that are intended for modular Java environments.
 
 Consumers of any of the above modules must add the following packaging options into the `android` block of their application module's `build.gradle` file to avoid build issues:
 ```groovy

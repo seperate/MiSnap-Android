@@ -1,4 +1,4 @@
-# MiSnap SDK v5.8.2 Views Integration Guide
+# MiSnap SDK v5.9.0 Views Integration Guide
 
 This guide is targeted towards customers who want to **create their own UI/UX** while re-using some of the components shipped within the MiSnap SDK. These components (Views) can be used to create the UI for fragments or activities without having to re-write a major portion of the `workflow` module shipped out-of-the-box with the MiSnap SDK.
 
@@ -29,26 +29,27 @@ Part of the `workflow` module, `MiSnapView` combines the functionality of the `C
 The easiest way to integrate the `MiSnapView` is to add the following to the integrating module's `build.gradle`:
 ```groovy
 dependencies {
-    implementation "com.miteksystems.misnap:workflow:5.8.2"
-    implementation "com.miteksystems.misnap:controller:5.8.2"
-    implementation "com.miteksystems.misnap:camera:5.8.2"
+    implementation "com.miteksystems.misnap:workflow:5.9.0"
+    implementation "com.miteksystems.misnap:controller:5.9.0"
+    implementation "com.miteksystems.misnap:camera:5.9.0"
 
     // Optional barcode analysis dependency
-    implementation "com.miteksystems.misnap:barcode-analysis:5.8.2"
+    implementation "com.miteksystems.misnap:barcode-analysis:5.9.0"
 
     // Optional document analysis dependency
-    implementation "com.miteksystems.misnap:document-analysis:5.8.2"
+    implementation "com.miteksystems.misnap:document-analysis:5.9.0"
 
     // Optional face analysis dependency
-    implementation "com.miteksystems.misnap:face-analysis:5.8.2"
+    implementation "com.miteksystems.misnap:face-analysis:5.9.0"
 
     // Optional MRZ detector dependency
-    implementation "com.miteksystems.misnap:feature-detector:5.8.2"
+    implementation "com.miteksystems.misnap:feature-detector:5.9.0"
 
     // Oprtional document classifier dependency
-    implementation "com.miteksystems.misnap:document-classifier:5.8.2"
+    implementation "com.miteksystems.misnap:document-classifier:5.9.0"
 }
 ```
+> NOTE: a typical MiSnap SDK integration won't need all of the above dependencies, it is advised to only include the dependencies needed for the features you plan to use from the MiSnap SDK to reduce the size of your application.
 
 To integrate the MiSnap SDK without having access to an external Maven server, please see [this FAQ](../README.md#how-to-integrate-the-misnap-sdk-without-having-access-to-a-remote-maven-repository).
 
@@ -75,7 +76,7 @@ Part of the `camera` module, the `CameraView` allows developers to add a camera 
 The easiest way to integrate the `CameraView` is to add the following to the integrating module's `build.gradle`:
 ```groovy
 dependencies {
-    implementation "com.miteksystems.misnap:camera:5.8.2"
+    implementation "com.miteksystems.misnap:camera:5.9.0"
 }
 ```
 
@@ -108,7 +109,7 @@ Please see `/examples/views/AnalysisFragment.kt` for the full code sample.
 The easiest way to integrate these views is to add the following to the integrating module's `build.gradle`:
 ```groovy
 dependencies {
-    implementation "com.miteksystems.misnap:workflow:5.8.2"
+    implementation "com.miteksystems.misnap:workflow:5.9.0"
 }
 ```
 

@@ -1,4 +1,4 @@
-# MiSnap SDK v5.8.2 Fragment Integration Guide
+# MiSnap SDK v5.9.0 Fragment Integration Guide
 
 This guide is targeted towards developers who want to integrate the MiSnap SDK in **single-activity architecture** applications. Please see the in-code documentation for the full list of `Fragment`s available in the MiSnap SDK.
 
@@ -24,30 +24,31 @@ The easiest way to integrate the MiSnap SDK is to add the following to the integ
 ```groovy
 dependencies {
     // Use this for check + id sessions
-    implementation "com.miteksystems.misnap:document:5.8.2"
+    implementation "com.miteksystems.misnap:document:5.9.0"
 
     // Use this for document classification
-    implementation "com.miteksystems.misnap:classifier:5.8.2"
+    implementation "com.miteksystems.misnap:classifier:5.9.0"
 
     // Use this for barcode sessions
-    implementation "com.miteksystems.misnap:barcode:5.8.2"
+    implementation "com.miteksystems.misnap:barcode:5.9.0"
 
     // Use this for selfie + voice sessions
-    implementation "com.miteksystems.misnap:biometric:5.8.2"
+    implementation "com.miteksystems.misnap:biometric:5.9.0"
 
     // Use this for selfie sessions
-    implementation "com.miteksystems.misnap:face:5.8.2"
+    implementation "com.miteksystems.misnap:face:5.9.0"
 
     // Use this for voice sessions
-    implementation "com.miteksystems.misnap:voice:5.8.2"
+    implementation "com.miteksystems.misnap:voice:5.9.0"
 
     // Use this for automatically getting the nfc credentials and then reading the chip
-    implementation "com.miteksystems.misnap:combined-nfc:5.8.2"
+    implementation "com.miteksystems.misnap:combined-nfc:5.9.0"
 
     // Use this for only reading the nfc chip
-    implementation "com.miteksystems.misnap:nfc:5.8.2"
+    implementation "com.miteksystems.misnap:nfc:5.9.0"
 }
 ```
+> NOTE: a typical MiSnap SDK integration won't need all of the above dependencies, it is advised to only include the dependencies needed for the features you plan to use from the MiSnap SDK to reduce the size of your application.
 
 To integrate the MiSnap SDK without having access to an external Maven server, please see [this FAQ](../README.md#how-to-integrate-the-misnap-sdk-without-having-access-to-a-remote-maven-repository).
 

@@ -12,33 +12,29 @@ import com.miteksystems.misnap.core.Frame
 import com.miteksystems.misnap.core.MiSnapSettings
 
 /**
- * This example demonstrates a direct integration with MiSnap SDK's document analysis science through
+ * This example demonstrates a direct integration with MiSnap SDK's document analysis science and identity use case through
  * the [MiSnapController], this type of integration is best suited for developers that want to
  * interface with the science directly and that will take care of supplying the frames themselves.
  *
- * NOTE: Ensure that the provided license has all the necessary features enabled for the target
- *  MiSnap session.
+ * Example: document analysis for IDs / Passports (science-level) using MiSnapController.
  *
+ * Notes:
+ * - Ensure the provided license enables the required features for your sessions.
+ * - Real-Time Security is NOT compatible with controller-based science integrations.
+ *
+ * See also:
+ * @see com.miteksystems.misnap.examples.science.FrameFromNativeCamera for examples on how to
+ * build a [Frame] object from camera APIs.
  * @see com.miteksystems.misnap.examples.science for examples on how to directly interface with other
  * MiSnap SDK sciences.
  */
-private class DocumentAnalysis : Fragment() {
-
-    /**
-     * Fetch the Misnap SDK license.
-     * Good practice: Handle the license in a way that it is remotely updatable.
-     */
-    private val license by lazy {  
-        LicenseFetcher.fetch()
-    }
-
+class IdentityDocumentAnalysis : Fragment() {
+    private val license by lazy { LicenseFetcher.fetch() }
     private lateinit var misnapController: MiSnapController
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        misnapController = initDocumentAnalysis()
-
+        misnapController = initDocumentAnalysisForId()
         /**
          * Call [startAnalysis] once the controller is ready to analyze [Frame]s.
          */
@@ -49,7 +45,7 @@ private class DocumentAnalysis : Fragment() {
     }
 
     /**
-     * Create a [MiSnapController] capable of analyzing frames for a Document session, then observe
+     * Create a [MiSnapController] capable of analyzing frames for a Document session for Id use case, then observe
      * the different [LiveData] objects to get notified about feedback results, final results, errors,
      * etc.
      * Once the controller is ready and initialized create a [Frame] object and use the [MiSnapController.analyzeFrame]
@@ -58,30 +54,27 @@ private class DocumentAnalysis : Fragment() {
      * @see com.miteksystems.misnap.examples.science.FrameFromNativeCamera for examples on how to
      * build a [Frame] object from different camera APIs.
      */
-    private fun initDocumentAnalysis(): MiSnapController {
-
-        val misnapSettings = MiSnapSettings(MiSnapSettings.UseCase.CHECK_FRONT, license).apply {
-            analysis.document.check.geo = MiSnapSettings.Analysis.Document.Check.Geo.US
-
+    private fun initDocumentAnalysisForId(): MiSnapController {
+        //Set MiSnap settings for IDs (e.g., ID_FRONT / ID_BACK / PASSPORT).
+        val misnapSettings = MiSnapSettings(MiSnapSettings.UseCase.ID_FRONT, license).apply {
             analysis.document.trigger = MiSnapSettings.Analysis.Document.Trigger.AUTO
 
-            // Optionally enable on device document classification
-            analysis.document.enableDocumentClassification = true
+            // Optional: enable on-device document classification when you need doc type inference.
+            // analysis.document.enableDocumentClassification = true
 
-            // Optionally enable barcode extraction.
-            analysis.document.barcodeExtractionRequirement =
-                MiSnapSettings.Analysis.Document.ExtractionRequirement.OPTIONAL
+            // Optional: If you integrate MRZ detection via feature-detector,
+            // configure your MRZ processing pipeline accordingly
         }
 
         return MiSnapController.create(requireContext(), misnapSettings).apply {
             /**
-             * Observe the [MiSnapController.feedbackResult] [LiveData] to handle the feedback from
-             * the analyzed frames and handle them accordingly, e.g. by showing the corresponding
-             * instructions on screen based on the [MiSnapController.FeedbackResult.userAction],
-             * showing the detected document corners using [MiSnapController.FeedbackResult.corners]
-             * or the detected glare corners in [MiSnapController.FeedbackResult.glareCorners].
-             */
-            feedbackResult.observe(viewLifecycleOwner) { feedbackResult ->
+            * Observe the [MiSnapController.feedbackResult] [LiveData] to handle the feedback from
+            * the analyzed frames and handle them accordingly, e.g. by showing the corresponding
+            * instructions on screen based on the [MiSnapController.FeedbackResult.userAction],
+            * showing the detected document corners using [MiSnapController.FeedbackResult.corners]
+            * or the detected glare corners in [MiSnapController.FeedbackResult.glareCorners].
+            */
+            feedbackResult.observe(viewLifecycleOwner) { feedback ->
 
             }
 
@@ -105,17 +98,13 @@ private class DocumentAnalysis : Fragment() {
              *
              * @see [ErrorResult] for all the possible error types emitted.
              */
-            errorResult.observe(viewLifecycleOwner) { result ->
-                when (result) {
-                    is ErrorResult.DocumentDetection -> {
-                    }
+            errorResult.observe(viewLifecycleOwner) { err ->
+                when (err) {
                     is ErrorResult.DocumentAnalysis -> {
+
                     }
-                    is ErrorResult.BarcodeDetection -> {
-                    }
-                    is ErrorResult.BarcodeAnalysis -> {
-                    }
-                    is ErrorResult.DocumentClassification -> {
+                    is ErrorResult.DocumentClassification -> { /* if classifier enabled */ }
+                    is ErrorResult.DocumentDetection -> {
 
                     }
                     else -> {}
