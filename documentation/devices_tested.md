@@ -1,4 +1,4 @@
-# MiSnap SDK v5.9.0 Devices Tested
+# MiSnap SDK v5.9.1 Devices Tested
 
 # Internal Devices
 | Device                        | OS          |
@@ -47,33 +47,38 @@
 
 
 # External Devices
-| Device                        | OS          |
-|:------------------------------| ----------: |
-| Google Pixel 7 | 15 |
-| Google Pixel 8 Pro | 15, 16 |
-| LG Q6 | 10 |
-| Oppo A94 5G | 13 |
-| Samsung Galaxy A13 | 14 |
-| Samsung Galaxy A14 | 14 |
-| Samsung Galaxy A24 4G | 15 |
-| Samsung Galaxy A52s 5G | 14 |
-| Samsung Galaxy A55 | 15 |
-| Samsung Galaxy A9 (2018) | 15 |
-| Samsung Galaxy M11 | 12 |
-| Samsung Galaxy Note 9 | 10 |
-| Samsung Galaxy S10 | 12 |
-| Samsung Galaxy S20 FE 5G | 13 |
-| Samsung Galaxy S22 5G | 14 |
-| Samsung Galaxy S22 Ultra 5G | 14 |
-| Samsung Galaxy S23 | 14, 15 |
-| Samsung Galaxy S23 Ultra | 14 |
-| Samsung Galaxy S24 Ultra | 15 |
-| Samsung Galaxy S9+ | 10 |
-| Samsung T369 | 12 |
-| Xiaomi 11T Pro | 14 |
-| Xiaomi Mi 11 Lite 5G | 14 |
-| Xiaomi Poco X3 | 11 |
-| Xiaomi Redmi 13C | 13 |
-| Xiaomi Redmi Note 11 | 13 |
-| Xiaomi Redmi Note 11 Pro+ 5G (India) | 13 |
-| Xiaomi Redmi Note 14 Pro 5G | 15 |
+| Device                     | OS          |
+|:---------------------------|------------:|
+| Cubot King Kong           | 13 |
+| Google Pixel 6a           | 15 |
+| HONOR 400 lite            | 15 |
+| Motorola Moto G85         | 15 |
+| Motorola Moto E15         | 14 |
+| Nokia 2.3                 | 11 |
+| Nokia 2.4                 | 12 |
+| Oppo A18                  | 14 |
+| Oppo A38                  | 15 |
+| Oppo A74 5G               | 13 |
+| Realme C55				| 15 |
+| Samsung Galaxy A04e       | 14 |
+| Samsung Galaxy A06        | 14, 16 |
+| Samsung Galaxy A14        | 13 |
+| Samsung Galaxy A6+ (2018) | 10 |
+| Samsung Galaxy Note 10+   | 12 |
+| TCL 505					| 14 |
+| Tecno Camon 20			| 14 |
+| Tecno Spark 20			| 13 |
+| Tecno Spark 20C			| 13 |
+| Xiaomi Poco M5            | 13 |
+| Xiaomi Poco C65           | 15 |
+| Xiaomi Poco C75           | 15 |
+| Xiaomi Redmi 12C          | 14 |
+| Xiaomi Redmi 13C          | 14, 15 |
+| Xiaomi Redmi 13C 5G       | 15 |
+| Xiaomi Redmi 14C          | 14, 15 |
+| Xiaomi Redmi 15C 4G       | 15 |
+| Xiaomi Redmi 9C           | 11 |
+| Xiaomi Redmi A3           | 16 |
+| Xiaomi Redmi Note 11      | 12 |
+| Xiaomi Redmi Note 12      | 14, 15 |
+| Xiaomi Redmi Note 9 Pro   | 12 |

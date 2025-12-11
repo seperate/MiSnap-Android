@@ -1,4 +1,4 @@
-# MiSnap SDK v5.9.0 for Android
+# MiSnap SDK v5.9.1 for Android
 Mitek MiSnap™ is a patented mobile-capture SDK that enables an intuitive user experience and instant capture of quality images. It all starts with the quality of the image.
 
 # Table of Contents
@@ -65,14 +65,14 @@ Please see [versions.gradle](versions.gradle) for more details.
 All sizes are download sizes for the `arm64-v8a` architecture.
 
 <!-- SIZE_TABLE_START -->
-| Use Case                         | Download Size (MiB) | 
+| Use Case                         | Download Size (MiB) |
 | :------------------------------- | ------------------: |
-| Document                         | 6.53                | 
-| Document and Barcode             | 9.68                | 
-| Document and Biometric           | 14.53               | 
-| Document, Barcode, and Biometric | 17.68               | 
-| Document, Biometric, and NFC     | 20.14               | 
-| Document Classification          | 14.61               | 
+| Document                         | 6.66                |
+| Document and Barcode             | 9.81                |
+| Document and Biometric           | 14.67               |
+| Document, Barcode, and Biometric | 17.81               |
+| Document, Biometric, and NFC     | 20.27               |
+| Document Classification          | 14.74               |
 <!-- SIZE_TABLE_END -->
 
 Please see [this page](documentation/download_sizes.md) for the in-depth size tables.
