@@ -1,9 +1,10 @@
 plugins {
-    id 'com.android.library'
-    id 'org.jetbrains.kotlin.android'
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.kotlin.android)
 }
 
 android {
+    namespace "com.miteksystems.misnap.apputil"
     compileSdkVersion project.compileSdkVersion
 
     defaultConfig {
@@ -36,6 +37,9 @@ android {
         sourceCompatibility jdkVersion
         targetCompatibility jdkVersion
     }
+    kotlinOptions {
+        jvmTarget = jdkVersion.toString()
+    }
 }
 
 dependencies {
@@ -43,8 +47,8 @@ dependencies {
     implementation "com.miteksystems.misnap:core:$misnapVersion"
     implementation "com.miteksystems.misnap:workflow:$misnapVersion"
 
-    api "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
-    api "com.google.android.material:material:$materialDesignVersion"
-    api "androidx.databinding:viewbinding:$viewbindingVersion"
+    api libs.kotlin.stdlib.jdk8
+    api libs.material
+    api libs.androidx.viewbinding
 
 }

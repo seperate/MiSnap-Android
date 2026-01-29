@@ -18,11 +18,22 @@ import androidx.appcompat.widget.TooltipCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
-import com.miteksystems.misnap.apputil.LicenseFetcher
 import com.miteksystems.misnap.R
+import com.miteksystems.misnap.apputil.LicenseFetcher
+import com.miteksystems.misnap.apputil.ViewPageAdapter
 import com.miteksystems.misnap.barcode.default
 import com.miteksystems.misnap.barcode.getScanSpeed
+import com.miteksystems.misnap.camera.getTorchMode
+import com.miteksystems.misnap.camera.getVideoBitrate
+import com.miteksystems.misnap.camera.getVideoQuality
+import com.miteksystems.misnap.camera.requireProfile
+import com.miteksystems.misnap.camera.shouldEnableHighResolutionFrames
+import com.miteksystems.misnap.camera.shouldRecordAudio
+import com.miteksystems.misnap.camera.shouldRecordSession
 import com.miteksystems.misnap.camera.util.CameraUtil
+import com.miteksystems.misnap.controller.getImageQuality
+import com.miteksystems.misnap.controller.getMotionDetectorSensitivity
+import com.miteksystems.misnap.controller.shouldEnableAiBasedRts
 import com.miteksystems.misnap.core.MiSnapSettings
 import com.miteksystems.misnap.databinding.BarcodeSettingsBinding
 import com.miteksystems.misnap.databinding.BarcodeWorkflowSettingsBinding
@@ -37,7 +48,28 @@ import com.miteksystems.misnap.databinding.NfcSettingsBinding
 import com.miteksystems.misnap.databinding.NfcWorkflowSettingsBinding
 import com.miteksystems.misnap.databinding.VoiceSettingsBinding
 import com.miteksystems.misnap.databinding.VoiceWorkflowSettingsBinding
-import com.miteksystems.misnap.document.*
+import com.miteksystems.misnap.document.default
+import com.miteksystems.misnap.document.getBarcodeExtractionRequirement
+import com.miteksystems.misnap.document.getCornerConfidence
+import com.miteksystems.misnap.document.getDocumentExtractionRequirement
+import com.miteksystems.misnap.document.getGeo
+import com.miteksystems.misnap.document.getMaxAngle
+import com.miteksystems.misnap.document.getMaxBrightness
+import com.miteksystems.misnap.document.getMinBrightness
+import com.miteksystems.misnap.document.getMinBusyBackground
+import com.miteksystems.misnap.document.getMinContrast
+import com.miteksystems.misnap.document.getMinHorizontalFillAligned
+import com.miteksystems.misnap.document.getMinHorizontalFillUnaligned
+import com.miteksystems.misnap.document.getMinNoGlare
+import com.miteksystems.misnap.document.getMinPadding
+import com.miteksystems.misnap.document.getMinSharpness
+import com.miteksystems.misnap.document.getMrzConfidence
+import com.miteksystems.misnap.document.requireDocType
+import com.miteksystems.misnap.document.shouldEnableDocumentClassification
+import com.miteksystems.misnap.document.shouldEnableEnhancedManual
+import com.miteksystems.misnap.document.shouldEnableFocusOnFinalFrame
+import com.miteksystems.misnap.document.shouldPrioritizeDocumentExtractionOverImageQuality
+import com.miteksystems.misnap.document.shouldRedactOptionalData
 import com.miteksystems.misnap.face.default
 import com.miteksystems.misnap.face.getMaxAngle
 import com.miteksystems.misnap.face.getMinEyesOpenConfidence
@@ -48,17 +80,19 @@ import com.miteksystems.misnap.face.getTriggerDelay
 import com.miteksystems.misnap.face.requireTrigger
 import com.miteksystems.misnap.nfc.default
 import com.miteksystems.misnap.nfc.shouldRedactOptionalData
-import com.miteksystems.misnap.sampleapp.results.SampleAppViewModel
-import com.miteksystems.misnap.apputil.ViewPageAdapter
-import com.miteksystems.misnap.camera.*
-import com.miteksystems.misnap.controller.getImageQuality
-import com.miteksystems.misnap.controller.getMotionDetectorSensitivity
-import com.miteksystems.misnap.controller.shouldEnableAiBasedRts
 import com.miteksystems.misnap.nfc.shouldSkipPortraitImage
-import com.miteksystems.misnap.voice.*
+import com.miteksystems.misnap.sampleapp.results.SampleAppViewModel
+import com.miteksystems.misnap.voice.MicrophoneUtil
+import com.miteksystems.misnap.voice.getMaxSilenceLength
+import com.miteksystems.misnap.voice.getMinSNR
+import com.miteksystems.misnap.voice.getMinSpeechLength
 import com.miteksystems.misnap.workflow.MiSnapWorkflowActivity
 import com.miteksystems.misnap.workflow.MiSnapWorkflowStep
-import com.miteksystems.misnap.workflow.fragment.*
+import com.miteksystems.misnap.workflow.fragment.BarcodeAnalysisFragment
+import com.miteksystems.misnap.workflow.fragment.DocumentAnalysisFragment
+import com.miteksystems.misnap.workflow.fragment.FaceAnalysisFragment
+import com.miteksystems.misnap.workflow.fragment.NfcReaderFragment
+import com.miteksystems.misnap.workflow.fragment.VoiceProcessorFragment
 import com.miteksystems.misnap.workflow.getForcedOrientation
 import com.miteksystems.misnap.workflow.shouldShowExitConfirmationDialog
 import com.miteksystems.misnap.workflow.util.PermissionsUtil
@@ -481,7 +515,8 @@ class SettingsFragment : Fragment(R.layout.fragment_settings_root) {
                 workflowSettings
             )
 
-            settings.workflow.showExitConfirmationDialog= it.documentWorkflowSettingsShowExitConfirmationDialogBox.isChecked
+            settings.workflow.showExitConfirmationDialog =
+                it.documentWorkflowSettingsShowExitConfirmationDialogBox.isChecked
         }
     }
 
@@ -870,7 +905,7 @@ class SettingsFragment : Fragment(R.layout.fragment_settings_root) {
             MiSnapSettings.UseCase.CHECK_FRONT,
             MiSnapSettings.UseCase.CHECK_BACK,
             MiSnapSettings.UseCase.GENERIC_DOCUMENT
-            -> {
+                -> {
                 //Remove barcode settings
                 findTabIndexByTabTitle(getString(BARCODE_TAB_TITLE_RES))?.let {
                     adapter.removeViewAt(it)
@@ -1039,8 +1074,8 @@ class SettingsFragment : Fragment(R.layout.fragment_settings_root) {
             }
             it.documentSettingsBarcodeRequestExtractionSpinner.apply {
                 isEnabled = !settings.analysis.document.advanced.requireDocType().isMrzDocument() &&
-                    !settings.analysis.document.advanced.requireDocType()
-                        .isCheck() && !isGeneric
+                        !settings.analysis.document.advanced.requireDocType()
+                            .isCheck() && !isGeneric
                 setSelection(settings.analysis.document.getBarcodeExtractionRequirement().ordinal)
             }
 
@@ -1301,7 +1336,7 @@ class SettingsFragment : Fragment(R.layout.fragment_settings_root) {
 
             (workflowSettings?.shouldShowBarcodeLabel
                 ?: defaultWorkflowSettings.shouldShowBarcodeLabel)?.let {
-                    binding.barcodeWorkflowSettingsShowBarcodeLabelBox.isChecked = it
+                binding.barcodeWorkflowSettingsShowBarcodeLabelBox.isChecked = it
             }
         }
     }
@@ -2047,8 +2082,8 @@ class SettingsFragment : Fragment(R.layout.fragment_settings_root) {
 
                         val isUnSupportedUseCase =
                             getUseCaseAt(useCaseIndex) == MiSnapSettings.UseCase.GENERIC_DOCUMENT ||
-                                getUseCaseAt(useCaseIndex) == MiSnapSettings.UseCase.CHECK_FRONT ||
-                                getUseCaseAt(useCaseIndex) == MiSnapSettings.UseCase.CHECK_BACK
+                                    getUseCaseAt(useCaseIndex) == MiSnapSettings.UseCase.CHECK_FRONT ||
+                                    getUseCaseAt(useCaseIndex) == MiSnapSettings.UseCase.CHECK_BACK
 
 
                         if (!isUnSupportedUseCase && isTabWithTitlePresent(
@@ -2089,7 +2124,7 @@ class SettingsFragment : Fragment(R.layout.fragment_settings_root) {
                     ) {
                         documentWorkflowSettingsBinding?.documentWorkflowSettingsShowManualButtonBox?.isChecked =
                             getDocumentAnalysisTriggerAt(position) ==
-                                MiSnapSettings.Analysis.Document.Trigger.MANUAL
+                                    MiSnapSettings.Analysis.Document.Trigger.MANUAL
                     }
 
                     override fun onNothingSelected(p0: AdapterView<*>?) {}
@@ -2480,25 +2515,25 @@ class SettingsFragment : Fragment(R.layout.fragment_settings_root) {
             "UseCaseSpinnerLastSelectedIndex"
         private const val SHARED_PREFS_LAST_SELECTED_VOICE_FLOW_INDEX =
             "VoiceFlowSpinnerLastSelectedIndex"
-        private const val CAMERA_TAB_TITLE_RES = R.string.misnapSampleAppSettingsCameraTabTitle
-        private const val DOCUMENT_TAB_TITLE_RES =
+        private val CAMERA_TAB_TITLE_RES = R.string.misnapSampleAppSettingsCameraTabTitle
+        private val DOCUMENT_TAB_TITLE_RES =
             R.string.misnapSampleAppSettingsDocumentTabTitle
-        private const val BARCODE_TAB_TITLE_RES =
+        private  val BARCODE_TAB_TITLE_RES =
             R.string.misnapSampleAppSettingsBarcodeTabTitle
-        private const val FACE_TAB_TITLE_RES = R.string.misnapSampleAppSettingsFaceTabTitle
-        private const val NFC_TAB_TITLE_RES = R.string.misnapSampleAppSettingsNfcTabTitle
-        private const val WORKFLOW_TAB_TITLE_RES =
+        private val FACE_TAB_TITLE_RES = R.string.misnapSampleAppSettingsFaceTabTitle
+        private val NFC_TAB_TITLE_RES = R.string.misnapSampleAppSettingsNfcTabTitle
+        private val WORKFLOW_TAB_TITLE_RES =
             R.string.misnapSampleAppSettingsWorkflowTabTitle
-        private const val VOICE_TAB_TITLE_RES = R.string.misnapSampleAppSettingsVoiceTabTitle
-        private const val DOCUMENT_ANALYSIS_FRAGMENT_LABEL_RES =
+        private val VOICE_TAB_TITLE_RES = R.string.misnapSampleAppSettingsVoiceTabTitle
+        private val DOCUMENT_ANALYSIS_FRAGMENT_LABEL_RES =
             R.string.misnapWorkflowDocumentAnalysisFlowDocumentAnalysisFragmentLabel
-        private const val BARCODE_ANALYSIS_FRAGMENT_LABEL_RES =
+        private  val BARCODE_ANALYSIS_FRAGMENT_LABEL_RES =
             R.string.misnapWorkflowBarcodeAnalysisFlowBarcodeAnalysisFragmentLabel
-        private const val FACE_ANALYSIS_FRAGMENT_LABEL_RES =
+        private val FACE_ANALYSIS_FRAGMENT_LABEL_RES =
             R.string.misnapWorkflowFaceAnalysisFlowFaceAnalysisFragmentLabel
-        private const val NFC_READER_FRAGMENT_LABEL_RES =
+        private  val NFC_READER_FRAGMENT_LABEL_RES =
             R.string.misnapWorkflowNfcReaderFlowNfcReaderFragmentLabel
-        private const val VOICE_ANALYSIS_FRAGMENT_LABEL_RES =
+        private val VOICE_ANALYSIS_FRAGMENT_LABEL_RES =
             R.string.misnapWorkflowVoiceProcessorFlowVoiceProcessorFragmentLabel
 
         //Bit flags

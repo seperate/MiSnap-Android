@@ -1,10 +1,11 @@
 plugins {
-    id 'com.android.application'
-    id 'kotlin-android'
-    id 'kotlinx-serialization'
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.serialization)
 }
 
 android {
+    namespace "com.miteksystems.misnap"
     compileSdkVersion project.compileSdkVersion
 
     defaultConfig {
@@ -21,7 +22,7 @@ android {
         // Only armeabi-v7a, arm64-v8a and x86_64 are currently enabled, but if you need one of these other variants,
         // then uncomment the variant you need and copy the relevant SO libraries into the project.
         ndk {
-            abiFilters "armeabi-v7a" , "arm64-v8a", "x86_64"//, "armeabi", "x86"
+            abiFilters "armeabi-v7a", "arm64-v8a", "x86_64"//, "armeabi", "x86"
         }
     }
 
@@ -45,7 +46,6 @@ android {
     }
 
     buildFeatures {
-        buildConfig true
         resValues true
         viewBinding true
     }
@@ -54,7 +54,9 @@ android {
         sourceCompatibility jdkVersion
         targetCompatibility jdkVersion
     }
-
+    kotlinOptions {
+        jvmTarget = jdkVersion.toString()
+    }
     packagingOptions {
         jniLibs {
             useLegacyPackaging = true
@@ -83,6 +85,6 @@ dependencies {
 
 
     // Memory Leak detection. Used only for this sample app. Not used within SDK modules.
-    debugImplementation "com.squareup.leakcanary:leakcanary-android:$leakcanaryVersion"
+    debugImplementation libs.leakcanary.android
 
 }

@@ -1,4 +1,4 @@
-# MiSnap SDK v5.9.1 Customization Guide
+# MiSnap SDK v5.10.0 Customization Guide
 While many of the customization options mentioned in this guide may be applicable to other MiSnap integration types, this guide focuses on customization options for the [activity-based integration](./activity_integration_guide.md).
 
 # Table of Contents
@@ -14,6 +14,7 @@ While many of the customization options mentioned in this guide may be applicabl
 * [Colors](#colors)
 * [Strings](#strings)
 * [Localization](#localization)
+    * [Overriding the Locale Programmatically](#overriding-the-locale-programmatically) 
 * [Themes and Styles](#themes-and-styles)
 * [Other resources](#other-resources)
 
@@ -141,6 +142,24 @@ The MiSnap SDK comes with support for the following languages:
 
 To add support for other locales, it is necessary to identify all the MiSnap SDK used strings as explained [here](#approaching-customization) and create a new `strings.xml` file within the custom locale `values` folder, then in the newly created `strings.xml` create records for all the target strings so that the MiSnap SDK displays these properly.
 
+### Overriding the Locale Programmatically
+If you need to support switching to a locale that is different from the device's system locale, the recommended approach is to use the [per-app language preferences](https://developer.android.com/guide/topics/resources/app-languages) system. This is the preferred and most future-proof way to manage locale changes in Android apps.
+
+The MiSnap SDK allows to override the default locale when integrating the SDK by using the [Activity-based Integration](./activity_integration_guide.md) and specifying the desired locale when invoking MiSnap as shown below:
+
+```kotlin
+MiSnapWorkflowActivity.buildIntent(
+    requireContext(),
+    MiSnapWorkflowStep(
+        MiSnapSettings(MiSnapSettings.UseCase.ID_FRONT, license)
+    ),
+    overrideLocale = Locale("es")
+)
+```
+
+> Note: The SDK will apply a locale override only if the specified Locale exists on the device(`Locale.getAvailableLocales()`), otherwise it will fall back to the device’s default locale. The locale override affects only the MiSnap SDK UI and resources, the resources must be available for the specified locale to be displayed properly. System UI components—such as permission dialogs or accessibility services like TalkBack—may continue to use the system’s language.
+
+
 ## Themes and Styles
 The `Workflow` module defines `MiSnapTheme` which extends the `Material` theme (required to properly function). The `MiSnapTheme` defines the common styles used across the SDK which can be extended, reused and overridden to achieve a consistent look and feel.
 
@@ -208,6 +227,15 @@ The MiSnap SDK will always display a tutorial screen at the start of every sessi
 Please see the in-code documentation for more details and other supported customization options for the `HelpFragment`.
 
 Please see `examples/advanced/screens/replacescreen/ReplaceScreenActivity.kt` for the full code sample.
+
+### Accessibility tutorial
+
+When a screen reader is enabled on the device, the tutorial changes in favor of an optimized version for visual impaired users by default during document sessions.
+The tutorial delivers sequential guidance messages to help users complete sessions more successfully.
+Customize the message set by overriding the string-array resource:
+  `misnapWorkflowHelpFragmentDocumentAccessibilityTutorialMessagesArray`
+
+The `misnapWorkflowHelpFragmentAccessibilityTutorialButtonStartSessionLabel` and `misnapWorkflowHelpFragmentAccessibilityTutorialButtonContinueLabel` strings allow customization of the button labels in the accessibility tutorial.
 
 ## Analysis Screen
 Most of these customizations are applicable to Document, Barcode and Face sessions. Please see the in-code documentation for more details and other supported customization options for the `DocumentAnalysisFragment`, `BarcodeAnalysisFragment` and `FaceAnalysisFragment`.
@@ -322,13 +350,20 @@ MiSnapSettings(
             hintDuration = 2_500,
             hintAnimationId = R.anim.my_custom_animation,
             hintViewShouldShowBackground = false,
-            hintViewInitialHintDelay = 2_000
+            hintViewInitialHintDelay = 2_000,
+            hintViewShouldAnnounceUnchangedHints = false
         )
     )
 }
 ```
 
 _Note: if you plan to use a custom `background drawable` in the `HintView` make sure to set the `hintViewShouldShowBackground` property to `false` to avoid displaying the default `backgroundColor`._
+
+#### Accessibility Behavior
+
+All hints are read aloud by default when screen reader is enabled on the device, this gives useful feedback to vision impaired users.
+
+This behavior can be customised to read aloud only hints that differ from the previous one by setting `hintViewShouldAnnounceUnchangedHints` to `false` in the `DocumentAnalysisFragment.WorkflowSettings` and `FaceAnalysisFragment.WorkflowSettings` objects as shown in the previous section.
 
 ### Customizing the SuccessView
 By default, the MiSnap SDK displays a fullscreen success message when an image has been correctly acquired in a session through the `SuccessView`. There are several aspects of the `SuccessView` that can be customized by using the `MiSnapSettings.Workflow` object, for example:

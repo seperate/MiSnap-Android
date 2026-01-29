@@ -14,6 +14,7 @@ module:controller
 com.miteksystems.misnap.controller
 module:core
 com.miteksystems.misnap.core
+com.miteksystems.misnap.core.internal
 com.miteksystems.misnap.core.serverconnection
 module:document-analysis
 com.miteksystems.misnap.document

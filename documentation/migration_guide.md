@@ -1,4 +1,31 @@
-# MiSnap SDK v5.9.1 Migration Guide
+# MiSnap SDK v5.10.0 Migration Guide
+
+## Upgrading the MiSnap SDK from v5.9.1 to v5.10.0
+
+### Customization changes
+
+A new accessibility tutorial is presented to visually impaired users by default when a screen reader is enabled on the device during document sessions.
+
+If you're using a custom layout for `HelpFragment` and wish to continue displaying your own content after MiSnap's upgrade, disable the new tutorial by setting `enableAccessibilityTutorial` in `HelpFragment.WorkflowSettings` to `false`.
+
+Some hint messages have been updated for better user guidance. The affected resources are:
+- `misnapWorkflowDocumentAnalysisFragmentHintViewHoldStillMessage`
+- `misnapWorkflowDocumentAnalysisFragmentHintViewReduceGlareMessage`
+- `misnapWorkflowDocumentAnalysisFragmentHintViewStraightenMessage`
+- `misnapWorkflowDocumentAnalysisFragmentHintViewTooBrightMessage`
+- `misnapWorkflowDocumentAnalysisFragmentHintViewUseDarkBackgroundMessage`
+- `misnapWorkflowDocumentAnalysisFragmentHintViewWrongDocumentPassportMessage`
+- `misnapWorkflowDocumentAnalysisFragmentHintViewWrongDocumentIdFrontMessage`
+- `misnapWorkflowDocumentAnalysisFragmentHintViewWrongDocumentIdBackMessage`
+- `misnapWorkflowDocumentAnalysisFragmentHintViewNotFoundMessage`
+- `misnapWorkflowDocumentAnalysisFragmentHintViewMrzNotFoundMessage`
+
+`LicenseUtil.checkLicenseStatus()` API has been added as a unified method to verify license status. This method returns a `LicenseStatus` enum and optionally validates a specific feature.
+
+The following methods are now deprecated:
+- `LicenseUtil.isExpired()`
+- `LicenseUtil.featureEnabled()`
+Please refer to the code examples for further details.
 
 ## Upgrading the MiSnap SDK from v5.8.2 to v5.9.0
 

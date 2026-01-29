@@ -1,6 +1,7 @@
 package com.miteksystems.misnap.apputil.view
 
 import android.animation.LayoutTransition
+import android.annotation.SuppressLint
 import android.content.Context
 import android.text.Spannable
 import android.text.SpannableStringBuilder
@@ -97,6 +98,7 @@ class JsonView : LinearLayout {
         textColorNull = color
     }
 
+    @SuppressLint("ResourceType")
     fun setTextSize(@Dimension(unit = Dimension.SP) size: Float) {
         textSize = size
     }
