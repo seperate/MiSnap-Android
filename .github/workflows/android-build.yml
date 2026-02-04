@@ -73,7 +73,7 @@ jobs:
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
-          ./gradlew assembleRelease --no-daemon
+          ./gradlew assembleRelease --no-daemon --dependency-verification=off
 
       # 7. Get version info from tag or input
       - name: Get version info
