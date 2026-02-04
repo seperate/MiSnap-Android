@@ -14,8 +14,8 @@ pluginManagement {
                 maven {
                     url = uri('https://maven.pkg.github.com/mitek-systems/misnap-android')
                     credentials {
-                        username = "your-github-username"
-                        password = "personal-access-token"
+                        username = System.getenv("GH_PACKAGES_USER") ?: findProperty("gpr.user") ?: ""
+                        password = System.getenv("GH_PACKAGES_TOKEN") ?: findProperty("gpr.token") ?: ""
                     }
                 }
                 mavenLocal()
