@@ -8,7 +8,7 @@ project.ext {
     targetSdkVersion = 32
     compileSdkVersion = 34
     coreMinSdk = 24
-    buildToolsVersion = "32.0.0"
+    buildToolsVersion = "34.0.0"
 
     jdkVersion = JavaVersion.VERSION_1_8
     ndkVersion = "27.1.12297006"

@@ -55,6 +55,7 @@ jobs:
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
           GH_PACKAGES_USER: ${{ secrets.GH_PACKAGES_USER }}
           GH_PACKAGES_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
+          BUILD_NUMBER: ${{ github.run_number }}
         run: |
           ./gradlew assembleRelease --no-daemon
 
