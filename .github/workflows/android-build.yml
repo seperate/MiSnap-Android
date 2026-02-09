@@ -41,12 +41,15 @@ jobs:
         run: chmod +x gradlew
 
       - name: Decode Keystore
-        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: |
-          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > app/release-keystore.jks
-          echo "Keystore decoded successfully"
+          if [ -n "$ANDROID_KEYSTORE_BASE64" ]; then
+            echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > app/release-keystore.jks
+            echo "Keystore decoded successfully"
+          else
+            echo "::warning::No keystore secret configured, skipping keystore decode"
+          fi
 
       - name: Build Release APK
         env:
