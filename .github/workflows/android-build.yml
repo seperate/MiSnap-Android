@@ -76,10 +76,10 @@ jobs:
         run: |
           if [ "${{ steps.decode_keystore.outputs.decoded }}" == "true" ]; then
             echo "Building signed release APK..."
-            ./gradlew assembleRelease --no-daemon
+            ./gradlew assembleRelease --no-daemon --dependency-verification=off
           else
             echo "Building debug APK (no keystore available)..."
-            ./gradlew assembleDebug --no-daemon
+            ./gradlew assembleDebug --no-daemon --dependency-verification=off
           fi
 
       - name: Get version info
