@@ -40,13 +40,31 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      - name: Validate required secrets
+        env:
+          GH_PACKAGES_USER: ${{ secrets.GH_PACKAGES_USER }}
+          GH_PACKAGES_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
+        run: |
+          if [ -z "$GH_PACKAGES_USER" ] || [ -z "$GH_PACKAGES_TOKEN" ]; then
+            echo "::error::GitHub Packages credentials are required. Please set GH_PACKAGES_USER and GH_PACKAGES_TOKEN secrets."
+            exit 1
+          fi
+          echo "✓ GitHub Packages credentials are configured"
+
       - name: Decode Keystore
-        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+        continue-on-error: true
+        id: decode_keystore
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: |
-          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > app/release-keystore.jks
-          echo "Keystore decoded successfully"
+          if [ -n "$ANDROID_KEYSTORE_BASE64" ]; then
+            echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > app/release-keystore.jks
+            echo "decoded=true" >> $GITHUB_OUTPUT
+            echo "✓ Keystore decoded successfully"
+          else
+            echo "decoded=false" >> $GITHUB_OUTPUT
+            echo "⚠ No keystore provided, will use debug signing"
+          fi
 
       - name: Build Release APK
         env:
@@ -56,7 +74,13 @@ jobs:
           GH_PACKAGES_USER: ${{ secrets.GH_PACKAGES_USER }}
           GH_PACKAGES_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
         run: |
-          ./gradlew assembleRelease --no-daemon
+          if [ "${{ steps.decode_keystore.outputs.decoded }}" == "true" ]; then
+            echo "Building signed release APK..."
+            ./gradlew assembleRelease --no-daemon
+          else
+            echo "Building debug APK (no keystore available)..."
+            ./gradlew assembleDebug --no-daemon
+          fi
 
       - name: Get version info
         id: version
@@ -70,20 +94,35 @@ jobs:
           echo "Building version: $VERSION"
 
       - name: Rename APK
+        id: rename
         run: |
-          APK_PATH=$(find app/build/outputs/apk/release -name "*.apk" -type f | head -1)
+          if [ "${{ steps.decode_keystore.outputs.decoded }}" == "true" ]; then
+            BUILD_TYPE="release"
+          else
+            BUILD_TYPE="debug"
+          fi
+
+          APK_PATH=$(find app/build/outputs/apk/${BUILD_TYPE} -name "*.apk" -type f | head -1)
           if [ -z "$APK_PATH" ]; then
-            echo "::error::No APK found in app/build/outputs/apk/release"
+            echo "::error::No APK found in app/build/outputs/apk/${BUILD_TYPE}"
             exit 1
           fi
-          mv "$APK_PATH" "app/build/outputs/apk/release/${{ env.APP_NAME }}-${{ steps.version.outputs.version }}.apk"
-          echo "Renamed APK to ${{ env.APP_NAME }}-${{ steps.version.outputs.version }}.apk"
+
+          OUTPUT_NAME="${{ env.APP_NAME }}-${{ steps.version.outputs.version }}"
+          if [ "$BUILD_TYPE" == "debug" ]; then
+            OUTPUT_NAME="${OUTPUT_NAME}-unsigned"
+          fi
+
+          mv "$APK_PATH" "app/build/outputs/apk/${BUILD_TYPE}/${OUTPUT_NAME}.apk"
+          echo "apk_path=app/build/outputs/apk/${BUILD_TYPE}/${OUTPUT_NAME}.apk" >> $GITHUB_OUTPUT
+          echo "✓ Renamed APK to ${OUTPUT_NAME}.apk"
 
       - name: Upload APK Artifact
+        id: upload_artifact
         uses: actions/upload-artifact@v4
         with:
-          name: release-apk
-          path: app/build/outputs/apk/release/*.apk
+          name: ${{ steps.decode_keystore.outputs.decoded == 'true' && 'release-apk' || 'debug-apk' }}
+          path: app/build/outputs/apk/*/*.apk
           retention-days: 30
 
       - name: Create GitHub Release
@@ -93,6 +132,8 @@ jobs:
           name: "Release ${{ steps.version.outputs.version }}"
           body: |
             ## Android Release v${{ steps.version.outputs.version }}
+
+            ${{ steps.decode_keystore.outputs.decoded == 'true' && '✓ **Signed Release Build**' || '⚠️ **Unsigned Debug Build** - Keystore not configured' }}
 
             ### Installation
             1. Download the APK file below
@@ -105,7 +146,7 @@ jobs:
             ---
             Built automatically by GitHub Actions
           files: |
-            app/build/outputs/apk/release/${{ env.APP_NAME }}-${{ steps.version.outputs.version }}.apk
+            ${{ steps.rename.outputs.apk_path }}
           draft: false
           prerelease: ${{ contains(steps.version.outputs.version, 'beta') || contains(steps.version.outputs.version, 'alpha') || contains(steps.version.outputs.version, 'rc') }}
         env:
@@ -116,4 +157,9 @@ jobs:
           echo "## Build Complete! :rocket:" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Version:** ${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
-          echo "**APK:** ${{ env.APP_NAME }}-${{ steps.version.outputs.version }}.apk" >> $GITHUB_STEP_SUMMARY
+          echo "**Build Type:** ${{ steps.decode_keystore.outputs.decoded == 'true' && 'Signed Release' || 'Unsigned Debug' }}" >> $GITHUB_STEP_SUMMARY
+          echo "**APK Path:** \`${{ steps.rename.outputs.apk_path }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.decode_keystore.outputs.decoded }}" != "true" ]; then
+            echo "⚠️ **Note:** This is an unsigned debug build. Configure keystore secrets for signed releases." >> $GITHUB_STEP_SUMMARY
+          fi
